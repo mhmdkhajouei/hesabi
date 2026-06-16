@@ -79,6 +79,7 @@ class CategoryRepo():
         )
 
         self.conn.commit()
+        return cursor.lastrowid
 
 
     def check_category(self,category_id):
@@ -182,15 +183,16 @@ class ComputeRepo():
         return result[0]
 
 
-    def get_categories_amount(self):
+    def get_categories_balance(self):
 
         cursor = self.conn.cursor()
         cursor.execute('''
-        SELECT categories.category_name, sum(amount)
-        FROM transactions
-        JOIN categories ON transactions.category_id = categories.category_id
-        WHERE transaction_type = 'expense'
-        GROUP BY transactions.category_id
+        SELECT categories.category_name, budgets.budget_goal, COALESCE(SUM(transactions.amount), 0) as spent
+        FROM categories
+        JOIN budgets ON categories.category_id = budgets.category_id
+        LEFT JOIN transactions ON categories.category_id = transactions.category_id 
+        AND transactions.transaction_type = 'expense'
+        GROUP BY categories.category_id
         '''
         )
         result = cursor.fetchall()
@@ -198,21 +200,23 @@ class ComputeRepo():
         return result
 
 
-    def get_category_amount(self,category_id):
+    def get_category_balance(self,category_id):
 
         cursor = self.conn.cursor()
         cursor.execute('''
-        SELECT sum(amount)
-        FROM transactions
-        WHERE category_id = ?
+        SELECT categories.category_name, budgets.budget_goal, COALESCE(SUM(transactions.amount), 0) as spent
+        FROM categories
+        JOIN budgets ON categories.category_id = budgets.category_id
+        LEFT JOIN transactions ON categories.category_id = transactions.category_id 
+        AND transactions.transaction_type = 'expense'
+        WHERE categories.category_id = ?
+        GROUP BY categories.category_id
         ''',
         (category_id,)
         )
         result = cursor.fetchone()
 
-        return result[0]
-
-
+        return result
 
 
 

@@ -119,8 +119,10 @@ class TransactionService():
 
 class CategoryService():
 
-    def __init__(self, repo):
+    def __init__(self, repo, budget_repo):
+
         self.repo = repo
+        self.budget_repo = budget_repo
 
 
     def _validate_name(self, category_name):
@@ -144,10 +146,24 @@ class CategoryService():
 
         return category_id
 
-    def add_category(self, category_name):
+
+    def _validate_budget_goal(self, budget_goal):
+
+        if not isinstance(budget_goal, int):
+            raise ValueError("budget goal must be an integer")
+        if budget_goal <= 0:
+            raise ValueError("budget goal must be greater than zero")
+
+        return budget_goal
+
+
+    def add_category(self, category_name, budget_goal):
 
         category_name = self._validate_name(category_name)
+        budget_goal = self._validate_budget_goal(budget_goal)
         self.repo.insert_category(category_name)
+        new_id = self.repo.insert_category(category_name)
+        self.budget_repo.insert_budget(budget_goal, new_id)
 
 
     def edit_category(self,category_id,**kwargs):
@@ -270,17 +286,28 @@ class ComputeService():
 
     def category_balance(self,category_id):
 
-        category_balance = self.repo.get_category_amount(category_id)
-        if not category_balance:
-            category_balance = []
+        row = self.repo.get_category_amount(category_id)
+        result = []
+        result.append({
+            "name": row["category_name"],
+            "budget": row["budget_goal"],
+            "spent": row["spent"],
+            "remaining": row["budget_goal"] - row["spent"]
+        })
 
-        return category_balance
+        return result
 
 
     def categories_balance(self):
 
-        categories_balance = self.repo.get_categories_amount()
-        if not categories_balance:
-            categories_balance = 0
-
-        return categories_balance
+        rows = self.repo.get_categories_balance()
+        result = []
+        for row in rows:
+            result.append({
+                "name": row["category_name"],
+                "budget": row["budget_goal"],
+                "spent": row["spent"],
+                "remaining": row["budget_goal"] - row["spent"]
+            })
+            
+        return result
