@@ -161,7 +161,6 @@ class CategoryService():
 
         category_name = self._validate_name(category_name)
         budget_goal = self._validate_budget_goal(budget_goal)
-        self.repo.insert_category(category_name)
         new_id = self.repo.insert_category(category_name)
         self.budget_repo.insert_budget(budget_goal, new_id)
 
@@ -286,7 +285,7 @@ class ComputeService():
 
     def category_balance(self,category_id):
 
-        row = self.repo.get_category_amount(category_id)
+        row = self.repo.get_category_balance(category_id)
         result = []
         result.append({
             "name": row["category_name"],
@@ -309,5 +308,5 @@ class ComputeService():
                 "spent": row["spent"],
                 "remaining": row["budget_goal"] - row["spent"]
             })
-            
+
         return result

@@ -14,7 +14,7 @@ def category_bp(services):
         if not data:
             return jsonify({'error': 'Request body must be JSON'}), 400
 
-        required = ['name']
+        required = ['category_name']
         for field in required:
             if field not in data:
                 return jsonify({'error': f'{field} is requied'}), 400
