@@ -14,16 +14,17 @@ def category_bp(services):
         if not data:
             return jsonify({'error': 'Request body must be JSON'}), 400
 
-        required = ['category_name']
+        required = ['category_name', 'budget_goal']
         for field in required:
             if field not in data:
                 return jsonify({'error': f'{field} is requied'}), 400
 
         try:
-            category_service.add_category(
-                category_name = data['category_name']
+            new_record = category_service.add_category(
+                category_name = data['category_name'],
+                budget_goal = data['budget_goal']
             )
-            return jsonify({'message': 'Category added successfully'}), 201
+            return jsonify({'message': 'Category added successfully', 'data': new_record}), 201
 
 
         except ValueError as e:
@@ -39,8 +40,8 @@ def category_bp(services):
             return jsonify({'error': 'No data provided'}), 400
 
         try:
-            category_service.edit_category(category_id,**data)
-            return jsonify({'message': 'Category updated successfully'}), 200
+            updated_record = category_service.edit_category(category_id,**data)
+            return jsonify({'message': 'Category updated successfully', 'data': updated_record}), 200
 
         except ValueError as e:
             return jsonify({'error': str(e)}), 400
@@ -50,8 +51,8 @@ def category_bp(services):
     def delete_category(category_id):
 
         try:
-            category_service.delete_category(category_id)
-            return jsonify({'message': 'Category selected deleted successfully'}), 200
+            deleted_id = category_service.delete_category(category_id)
+            return jsonify({'message': 'Category selected deleted successfully', 'data': deleted_id}), 200
 
         except ValueError as e:
             return jsonify({'error': str(e)}), 400

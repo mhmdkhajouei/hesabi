@@ -17,14 +17,14 @@ def transaction_bp(services):
                 return jsonify({'error': f'{field} is required'}), 400
 
         try:
-            transaction_service.add_transaction(
+            new_record = transaction_service.add_transaction(
                 amount=data['amount'],
                 transactions_type=data['transactions_type'],
                 transaction_date=data['transaction_date'],
                 category_id=data.get('category_id'),
                 note=data.get('note')
             )
-            return jsonify({'message': 'Transaction added successfully'}), 201
+            return jsonify({'message': 'Transaction added successfully', 'data': new_record}), 201
 
         except ValueError as e:
             return jsonify({'error': str(e)}), 400
@@ -38,8 +38,8 @@ def transaction_bp(services):
             return jsonify({'error': 'No data provided'}), 400
 
         try:
-            transaction_service.edit_transaction(transaction_id, **data)
-            return jsonify({'message': 'Transaction updated successfully'}), 200
+            updated_record = transaction_service.edit_transaction(transaction_id, **data)
+            return jsonify({'message': 'Transaction updated successfully', 'data': updated_record}), 200
 
         except ValueError as e:
             return jsonify({'error': str(e)}), 400
@@ -48,8 +48,8 @@ def transaction_bp(services):
     @bp.route('/<int:transaction_id>', methods=['DELETE'])
     def delete_transaction(transaction_id):
         try:
-            transaction_service.delete_transaction(transaction_id)
-            return jsonify({'message': 'Transaction deleted successfully'}), 200
+            deleted_id = transaction_service.delete_transaction(transaction_id)
+            return jsonify({'message': 'Transaction deleted successfully', 'data': deleted_id}), 200
 
         except ValueError as e:
             return jsonify({'error': str(e)}), 400

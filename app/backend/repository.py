@@ -1,3 +1,5 @@
+
+
 class TransactionRepo():
     
     def __init__(self,conn):
@@ -13,8 +15,9 @@ class TransactionRepo():
         VALUES (?,?,?,?,?)''',
         (amount,transactions_type,transaction_date,category_id,note)
         )
-        
+
         self.conn.commit()
+        return cursor.lastrowid
 
 
     def update_transaction(self,transaction_id,kwargs):
@@ -51,7 +54,7 @@ class TransactionRepo():
 
         cursor = self.conn.cursor()
         cursor.execute('''
-        SELECT amount, transaction_type, transaction_date, category_id, note
+        SELECT transaction_id, amount, transaction_type, transaction_date, category_id, note
         FROM transactions
         WHERE transaction_id = ?
         ''',
@@ -80,6 +83,19 @@ class CategoryRepo():
 
         self.conn.commit()
         return cursor.lastrowid
+
+
+    def get_category(self,category_id):
+        cursor = self.conn.cursor()
+        cursor.execute('''
+        SELECT category_id, category_name 
+        FROM categories
+        WHERE category_id = (?)
+        ''',
+        (category_id,)
+        )
+        result = cursor.fetchone()
+        return result
 
 
     def check_category(self,category_id):
@@ -131,6 +147,7 @@ class BudgetRepo():
         )
 
         self.conn.commit()
+        return cursor.lastrowid
 
 
     def update_budget(self,budget_id,kwargs):
@@ -161,6 +178,19 @@ class BudgetRepo():
 
         result = cursor.fetchone()
         return result[0]
+
+
+    def get_budget(self,budget_id):
+        cursor = self.conn.cursor()
+        cursor.execute('''
+        SELECT budget_id, budget_goal, currency
+        FROM budgets
+        WHERE budget_id = (?)
+        ''',
+        (budget_id,)
+        )
+        result = cursor.fetchone()
+        return result
 
 
 class ComputeRepo():

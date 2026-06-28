@@ -19,11 +19,11 @@ def budget_bp(services):
                 return jsonify({'error': f'{field} is required'}), 400
 
         try:
-            budget_service.add_budget(
+            new_record = budget_service.add_budget(
                 budget_goal = data['budget_goal'],
                 category_id = data['category_id']
                 )
-            return jsonify({'message': 'Budget added successfully'}), 201
+            return jsonify({'message': 'Budget added successfully', 'data': new_record}), 201
 
         except ValueError as e:
             return jsonify({'error': str(e)}), 400
@@ -36,8 +36,8 @@ def budget_bp(services):
             return jsonify({'error': 'request body must be JSON'}), 400
 
         try:
-            budget_service.edit_budget(budget_id,**data)
-            return jsonify({'message': 'Budget updated successfully '}),200
+            updated_record = budget_service.edit_budget(budget_id,**data)
+            return jsonify({'message': 'Budget updated successfully', 'data': updated_record}),200
 
         except ValueError as e:
             return jsonify({'error': str(e)}), 400
@@ -47,8 +47,8 @@ def budget_bp(services):
     def delete_budget(budget_id):
 
         try:
-            budget_service.delete_budget(budget_id)
-            return jsonify({'message': 'Budget selected deleted successfully'}), 200
+            deleted_id = budget_service.delete_budget(budget_id)
+            return jsonify({'message': 'Budget selected deleted successfully', 'data': deleted_id}), 200
 
         except ValueError as e:
             return jsonify({'error': str(e)}), 400

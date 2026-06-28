@@ -1,5 +1,5 @@
 import datetime as dt
-import utils as ut
+from backend import utils as ut
 
 
 class TransactionService():
@@ -87,7 +87,10 @@ class TransactionService():
 
         clean_data = self.validate_transaction(
             amount, transactions_type, transaction_date, category_id, note)
-        self.repo.insert_transaction(*clean_data)
+        new_id = self.repo.insert_transaction(*clean_data)
+        new_record = self.repo.get_transaction(new_id)
+        return dict(new_record)
+
 
 
     def edit_transaction(self,transaction_id,**kwargs):
@@ -109,12 +112,15 @@ class TransactionService():
             kwargs["note"] = self._validate_note(kwargs["note"])
 
         self.repo.update_transaction(transaction_id,kwargs)
+        updated_record = self.repo.get_transaction(transaction_id)
+        return dict(updated_record)
 
 
     def delete_transaction(self,transaction_id):
 
         self._validate_transaction_id(transaction_id)
         self.repo.delete_transaction(transaction_id)
+        return transaction_id
 
 
 class CategoryService():
@@ -163,6 +169,11 @@ class CategoryService():
         budget_goal = self._validate_budget_goal(budget_goal)
         new_id = self.repo.insert_category(category_name)
         self.budget_repo.insert_budget(budget_goal, new_id)
+        return {
+            "category_id": new_id,
+            "category_name": category_name,
+            "budget_goal": budget_goal
+        }
 
 
     def edit_category(self,category_id,**kwargs):
@@ -172,12 +183,15 @@ class CategoryService():
             kwargs["category_name"] = self._validate_name(kwargs["category_name"])
 
         self.repo.update_category(category_id, kwargs)
+        updated_record = self.repo.get_category(category_id)
+        return dict(updated_record)
 
 
     def delete_category(self,category_id):
 
         self._validate_category_id(category_id)
         self.repo.delete_category(category_id)
+        return category_id
 
 
 class BudgetService():
@@ -232,7 +246,9 @@ class BudgetService():
     def add_budget(self, budget_goal, category_id):
 
         clean_data = self.validate_budget(budget_goal, category_id)
-        self.repo.insert_budget(*clean_data)
+        new_id = self.repo.insert_budget(*clean_data)
+        new_record = self.repo.get_budget(new_id)
+        return dict(new_record)
 
 
     def edit_budget(self,budget_id,**kwargs):
@@ -242,12 +258,15 @@ class BudgetService():
             kwargs["budget_goal"] = self._validate_budget_goal(kwargs["budget_goal"])
         
         self.repo.update_budget(budget_id, kwargs)
+        updated_record = self.repo.get_budget(budget_id)
+        return dict(updated_record)
 
 
     def delete_budget(self,budget_id):
 
         self._validate_budget_id(budget_id)
         self.repo.delete_budget(budget_id)
+        return budget_id
 
 
 class ComputeService():

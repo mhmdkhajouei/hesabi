@@ -1,6 +1,6 @@
-import service as srv
-import repository as rep
-from conn_db import create_connection
+from backend import service as srv
+from backend import  repository as rep
+from backend.conn_db  import create_connection
 
 
 def create_app():
@@ -169,4 +169,4 @@ if __name__ == "__main__":
 
     conn,service = create_app()
     rep.clean_test_data(conn, "transactions", "budgets", "categories")
-    run_test(service)
+    #run_test(service)
