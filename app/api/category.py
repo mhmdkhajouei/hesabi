@@ -6,6 +6,13 @@ def category_bp(services):
     bp = Blueprint("category", __name__, url_prefix="/api/categories")
     category_service = services["category"]
 
+    @bp.route('/', methods=['GET'])
+    def get_all_categories():
+        try:
+            result = category_service.get_all_categories()
+            return jsonify({'data': result}), 200
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
 
     @bp.route('/', methods=['POST'])
     def add_category():

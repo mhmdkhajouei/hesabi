@@ -1,8 +1,10 @@
 import sqlite3
+import os
 
 def create_connection():
-    
-    conn = sqlite3.connect("/Users/mohammad/Documents/Python/projects/hesabi/app/app.db", check_same_thread=False)
+
+    DB_PATH = os.environ.get("DB_PATH", "/app/app.db")
+    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
     conn.execute("PRAGMA foreign_keys = ON;")
     conn.row_factory = sqlite3.Row
     

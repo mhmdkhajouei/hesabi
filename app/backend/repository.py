@@ -65,6 +65,16 @@ class TransactionRepo():
         return result
 
 
+    def get_all_transactions(self):
+        cursor = self.conn.cursor()
+        cursor.execute('''
+            SELECT transaction_id, amount, transaction_type, transaction_date, category_id, note
+            FROM transactions
+            ORDER BY transaction_id ASC
+        ''')
+        return cursor.fetchall()
+
+
 class CategoryRepo():
 
     def __init__(self,conn):
@@ -96,6 +106,17 @@ class CategoryRepo():
         )
         result = cursor.fetchone()
         return result
+
+
+    def get_all_categories(self):
+        cursor = self.conn.cursor()
+        cursor.execute('''
+        SELECT categories.category_id, categories.category_name, budgets.budget_goal
+        FROM categories
+        JOIN budgets ON categories.category_id = budgets.category_id
+        ORDER BY categories.category_id ASC
+        ''')
+        return cursor.fetchall()
 
 
     def check_category(self,category_id):
@@ -190,8 +211,20 @@ class BudgetRepo():
         (budget_id,)
         )
         result = cursor.fetchone()
+
         return result
 
+    def get_budget_by_category(self, category_id):
+        cursor = self.conn.cursor()
+        cursor.execute('''
+        SELECT  budget_id, budget_goal
+        FROM budgets
+        WHERE category_id = (?)
+        ''',
+        (category_id,)
+        )
+        result = cursor.fetchone()
+        return result
 
 class ComputeRepo():
 

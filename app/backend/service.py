@@ -83,10 +83,15 @@ class TransactionService():
         return amount, transactions_type, transaction_date, category_id, note
 
 
-    def add_transaction(self, amount, transactions_type, transaction_date, category_id, note):
+    def get_all_transactions(self):
+        rows = self.repo.get_all_transactions()
+        return [dict(row) for row in rows]
+
+
+    def add_transaction(self, amount, transaction_type, transaction_date, category_id, note):
 
         clean_data = self.validate_transaction(
-            amount, transactions_type, transaction_date, category_id, note)
+            amount, transaction_type, transaction_date, category_id, note)
         new_id = self.repo.insert_transaction(*clean_data)
         new_record = self.repo.get_transaction(new_id)
         return dict(new_record)
@@ -163,6 +168,16 @@ class CategoryService():
         return budget_goal
 
 
+    def _validate_budget_id(self, budget_id):
+        if budget_id is None:
+            raise ValueError("there is no budget id entered!")
+        if not isinstance(budget_id, int):
+            raise ValueError("budget id must be an integer")
+        if not self.budget_repo.check_budget(budget_id):
+            raise ValueError("this budget id does not exist")
+        return budget_id
+
+
     def add_category(self, category_name, budget_goal):
 
         category_name = self._validate_name(category_name)
@@ -175,16 +190,28 @@ class CategoryService():
             "budget_goal": budget_goal
         }
 
-
-    def edit_category(self,category_id,**kwargs):
-
+    def edit_category(self, category_id, **kwargs):
         self._validate_category_id(category_id)
-        if "category_name" in kwargs:
-            kwargs["category_name"] = self._validate_name(kwargs["category_name"])
 
-        self.repo.update_category(category_id, kwargs)
-        updated_record = self.repo.get_category(category_id)
-        return dict(updated_record)
+        category_fields = {}
+        if "category_name" in kwargs:
+            category_fields["category_name"] = self._validate_name(kwargs["category_name"])
+
+        if category_fields:
+            self.repo.update_category(category_id, category_fields)
+
+        if "budget_goal" in kwargs:
+            budget_goal = self._validate_budget_goal(kwargs["budget_goal"])
+            budget_row = self.budget_repo.get_budget_by_category(category_id)
+            budget_id = self._validate_budget_id(budget_row["budget_id"])
+            self.budget_repo.update_budget(budget_id, {"budget_goal": budget_goal})
+
+        updated_category = self.repo.get_category(category_id)
+        updated_budget = self.budget_repo.get_budget_by_category(category_id)
+
+        result = dict(updated_category)
+        result["budget_goal"] = updated_budget["budget_goal"]
+        return result
 
 
     def delete_category(self,category_id):
@@ -192,6 +219,11 @@ class CategoryService():
         self._validate_category_id(category_id)
         self.repo.delete_category(category_id)
         return category_id
+
+
+    def get_all_categories(self):
+        rows = self.repo.get_all_categories()
+        return [dict(row) for row in rows]
 
 
 class BudgetService():
@@ -305,15 +337,13 @@ class ComputeService():
     def category_balance(self,category_id):
 
         row = self.repo.get_category_balance(category_id)
-        result = []
-        result.append({
+        return {
             "name": row["category_name"],
             "budget": row["budget_goal"],
             "spent": row["spent"],
             "remaining": row["budget_goal"] - row["spent"]
-        })
+        }
 
-        return result
 
 
     def categories_balance(self):

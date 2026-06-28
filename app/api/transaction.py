@@ -6,12 +6,19 @@ def transaction_bp(services):
     bp = Blueprint('transaction', __name__, url_prefix='/api/transactions')
     transaction_service = services["transaction"]
 
+    @bp.route('/', methods=['GET'])
+    def get_all_transactions():
+        try:
+            result = transaction_service.get_all_transactions()
+            return jsonify({'data': result}), 200
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
 
     @bp.route('/', methods=['POST'])
     def add_transaction():
         data = request.json
 
-        required = ['amount', 'transactions_type', 'transaction_date']
+        required = ['amount', 'transaction_type', 'transaction_date']
         for field in required:
             if field not in data:
                 return jsonify({'error': f'{field} is required'}), 400
@@ -19,7 +26,7 @@ def transaction_bp(services):
         try:
             new_record = transaction_service.add_transaction(
                 amount=data['amount'],
-                transactions_type=data['transactions_type'],
+                transaction_type=data['transaction_type'],
                 transaction_date=data['transaction_date'],
                 category_id=data.get('category_id'),
                 note=data.get('note')

@@ -48,7 +48,7 @@ def compute_bp(services):
 
         try:
             result = compute_service.category_balance(category_id)
-            return jsonify({'category_balance': result or []}), 200
+            return jsonify({'category_balance': result or {}}), 200
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
